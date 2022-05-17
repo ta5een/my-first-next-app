@@ -59,7 +59,7 @@ export async function getPostData(id: string): Promise<PostData> {
   };
 }
 
-export function getSortedPostsData() {
+export function getSortedPostsData(): PostData[] {
   // Get file names under /posts
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsData = fileNames.map((fileName) => {
@@ -72,12 +72,15 @@ export function getSortedPostsData() {
 
     // Use gray-matter to parse the post metadata section
     const matterResult = matter(fileContents);
+    const { title, date, ...restMatterData } = matterResult.data;
 
     // Combine the data with the id
     return {
       id,
-      ...matterResult.data,
-    } as { id: any; [key: string]: any };
+      date: date || "<NO-DATE>",
+      title: title || "<NO-TITLE>",
+      ...restMatterData.data,
+    };
   });
 
   // Sort posts by date
