@@ -4,6 +4,51 @@ import matter from "gray-matter";
 
 const postsDirectory = path.join(process.cwd(), "posts");
 
+export interface PostData {
+  id: string;
+  title: string;
+  date: string;
+  [key: string]: any;
+}
+
+export function getAllPostIds() {
+  const fileNames = fs.readdirSync(postsDirectory);
+
+  // Returns an array that looks like this:
+  // [
+  //   {
+  //     params: {
+  //       id: 'ssg-ssr'
+  //     }
+  //   },
+  //   {
+  //     params: {
+  //       id: 'pre-rendering'
+  //     }
+  //   }
+  // ]
+  return fileNames.map((fileName) => ({
+    params: { id: fileName.replace(/\.md$/, "") },
+  }));
+}
+
+export function getPostData(id: string): PostData {
+  const fullPath = path.join(postsDirectory, `${id}.md`);
+  const fileContents = fs.readFileSync(fullPath, "utf-8");
+
+  // Use gray-matter to parse the post metadata section
+  const matterResult = matter(fileContents);
+  const { title, date, ...restMatterData } = matterResult.data;
+
+  // Combine the data with the id
+  return {
+    id,
+    date: date || "<NO-DATE>",
+    title: title || "<NO-TITLE>",
+    ...restMatterData,
+  };
+}
+
 export function getSortedPostsData() {
   // Get file names under /posts
   const fileNames = fs.readdirSync(postsDirectory);
