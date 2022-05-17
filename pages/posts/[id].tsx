@@ -1,14 +1,19 @@
-import { NextPage } from 'next';
 import Head from 'next/head';
+import {
+  GetStaticPaths,
+  GetStaticProps,
+  InferGetStaticPropsType,
+  NextPage,
+} from 'next';
 
 import Date from '../../components/date';
 import Layout from '../../components/layout';
-import { getAllPostIds, getPostData, PostData } from '../../lib/posts';
 import utilStyles from '../../styles/utils.module.css';
+import { getAllPostIds, getPostData, PostData } from '../../lib/posts';
 
-type PostProps = { postData: PostData };
-
-const Post: NextPage<PostProps> = ({ postData }) => {
+const PostPage: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
+  postData,
+}) => {
   return (
     <Layout>
       <Head>
@@ -25,16 +30,20 @@ const Post: NextPage<PostProps> = ({ postData }) => {
   );
 };
 
-export async function getStaticPaths() {
+export const getStaticPaths: GetStaticPaths = () => {
   const paths = getAllPostIds();
   return { paths, fallback: false };
-}
+};
 
-type PostStaticProps = { params: { id: string } };
+type PostPageProps = { postData: PostData };
+type PostPageQuery = { id: string };
 
-export async function getStaticProps({ params }: PostStaticProps) {
-  const postData = await getPostData(params.id);
+export const getStaticProps: GetStaticProps<
+  PostPageProps,
+  PostPageQuery
+> = async ({ params }) => {
+  const postData = await getPostData(params!.id);
   return { props: { postData } };
-}
+};
 
-export default Post;
+export default PostPage;
